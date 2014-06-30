@@ -1,10 +1,10 @@
 # Wray, faye client for Go
 
-Wray is a [Go](http://golang.org/) client for the [Faye](http://faye.jcoglan.com) publish-subscribe messaging service by [James Coglan](https://twitter.com/jcoglan)
+Wray is a client for the [Faye](http://faye.jcoglan.com) publish-subscribe messaging service by [James Coglan](https://twitter.com/jcoglan).
 
 ## Current status
 
-In progress
+In progress.
 
 ## Getting Started
 
@@ -63,8 +63,10 @@ func main() {
 }
 ```
 
+Simple examples are availabe in the examples folder.
+
 ##Future Work
-There is still a lot to do to bring Wray in line with Faye functionality. This is a less than exhaustive list of work to be completed
+There is still a lot to do to bring Wray in line with Faye functionality. This is a less than exhaustive list of work to be completed:-
 
 - web socket support
 - eventsource support
@@ -76,7 +78,7 @@ There is still a lot to do to bring Wray in line with Faye functionality. This i
 
 ## Bugs/Features/Prase
 
-It you find any bugs or have some feature requests please add an issue on the repository. Or if you just want to get in touch and tell me how awesome wray is you can get me on twitter @colin_gemmell or drop me an email at pythonandchips{at}gmail.com
+It you find any bugs or have some feature requests please add an issue on the repository. Or if you just want to get in touch and tell me how awesome wray is you can get me on twitter @colin_gemmell or drop me an email at pythonandchips{at}gmail.com.
 
 ## Contributing to Wray
 
