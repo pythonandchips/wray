@@ -1,6 +1,6 @@
 # Wray, faye client for Go
 
-Wray is a client for the (Faye)[http://faye.jcoglan.com] publish-subscribe messaging service by (James Coglan)[https://twitter.com/jcoglan]
+Wray is a client for the [Faye](http://faye.jcoglan.com) publish-subscribe messaging service by [James Coglan](https://twitter.com/jcoglan)
 
 ## Current status
 
@@ -8,7 +8,7 @@ In progress
 
 ## Getting Started
 
-Wray is only a client for Faye. You will need to setup a server using Ruby or Node.js first. Instructions that can be found on the (Faye project pages)[http://faye.jcoglan.com/].
+Wray is only a client for Faye. You will need to setup a server using Ruby or Node.js first. Instructions that can be found on the [Faye project pages](http://faye.jcoglan.com/).
 
 ###Subscribing to channels
 
