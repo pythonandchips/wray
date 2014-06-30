@@ -1,6 +1,6 @@
 # Wray, faye client for Go
 
-Wray is a client for the [Faye](http://faye.jcoglan.com) publish-subscribe messaging service by [James Coglan](https://twitter.com/jcoglan)
+Wray is a [Go](http://golang.org/) client for the [Faye](http://faye.jcoglan.com) publish-subscribe messaging service by [James Coglan](https://twitter.com/jcoglan)
 
 ## Current status
 
