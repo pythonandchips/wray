@@ -35,41 +35,50 @@ func TestInitializingClient(t *testing.T) {
 	})
 }
 
-func TestSubscribe(t *testing.T) {
-	Convey("subscribe to a channel when unconnected", t, func() {
-		var fayeClient FayeClient
-		var callback func(Message)
-		var subscriptionPromise SubscriptionPromise
-		var fakeHttpTransport *FakeHttpTransport
-		var subscriptionParams map[string]interface{}
-		var response Response
+func TestSubscribeToChannel(t *testing.T) {
+	var fayeClient FayeClient
+	var callback func(Message)
+	var subscription Subscription
+	var fakeHttpTransport *FakeHttpTransport
+	var subscriptionParams map[string]interface{}
+	var response Response
+	Convey("the client send the subscription to the server", t, func() {
 		Given(func() {
-			response = Response{id: "1", channel: "/meta/handshake", successful: true, clientId: "client4", supportedConnectionTypes: []string{"long-polling"}}
+			response = Response{id: "1", channel: "/meta/handshake", successful: true, clientId: "client1", supportedConnectionTypes: []string{"long-polling"}}
 		})
+		Given(func() { subscription = Subscription{channel: "/foo/*", callback: callback} })
 		Given(func() { fakeHttpTransport = &FakeHttpTransport{usable: true, response: response} })
 		Given(func() { registeredTransports = []Transport{fakeHttpTransport} })
-		Given(func() { fayeClient = BuildFayeClient().WithTransport(fakeHttpTransport).Client() })
+		Given(func() {
+			fayeClient = BuildFayeClient().WithTransport(fakeHttpTransport).AddSubscription(subscription).Client()
+		})
 		Given(func() {
 			subscriptionParams = map[string]interface{}{"channel": "/meta/subscribe", "clientId": response.clientId, "subscription": "/foo/*", "id": "1"}
 		})
 		Given(func() { callback = func(message Message) {} })
-		When(func() { subscriptionPromise = fayeClient.Subscribe("/foo/*", false, callback) })
-		Convey("connects the faye client", func() {
-			Then(func() { So(fayeClient.state, ShouldEqual, CONNECTED) })
-		})
+		When(func() { fayeClient.subscribe() })
+		Then(func() { So(fakeHttpTransport.sentParams, ShouldResemble, subscriptionParams) })
+	})
+}
+
+func TestSubscribe(t *testing.T) {
+	Convey("subscribe to a channel when unconnected", t, func() {
+		var fayeClient FayeClient
+		var callback func(Message)
+		var subscription Subscription
+		Given(func() { fayeClient = BuildFayeClient().Client() })
+		Given(func() { callback = func(message Message) {} })
+		When(func() { subscription = fayeClient.Subscribe("/foo/*", false, callback) })
 		Convey("add the subscription to the client", func() {
 			Then(func() { So(len(fayeClient.subscriptions), ShouldEqual, 1) })
-			Then(func() { So(fayeClient.subscriptions[0].channel, ShouldEqual, subscriptionPromise.subscription.channel) })
+			Then(func() { So(fayeClient.subscriptions[0].channel, ShouldEqual, subscription.channel) })
 			Then(func() {
-				So(fayeClient.subscriptions[0].callback, ShouldEqual, subscriptionPromise.subscription.callback)
+				So(fayeClient.subscriptions[0].callback, ShouldEqual, subscription.callback)
 			})
 		})
 		Convey("the promise has the setup subscription", func() {
-			Then(func() { So(subscriptionPromise.subscription.channel, ShouldEqual, "/foo/*") })
-			Then(func() { So(subscriptionPromise.subscription.callback, ShouldEqual, callback) })
-		})
-		Convey("the client send the subscription to the server", func() {
-			Then(func() { So(fakeHttpTransport.sentParams, ShouldResemble, subscriptionParams) })
+			Then(func() { So(subscription.channel, ShouldEqual, "/foo/*") })
+			Then(func() { So(subscription.callback, ShouldEqual, callback) })
 		})
 	})
 }
@@ -118,8 +127,8 @@ func TestPerformHandshake(t *testing.T) {
 			fakeHttpTransport = &FakeHttpTransport{usable: true, response: response, err: errors.New("it didny work")}
 		})
 		Given(func() { registeredTransports = []Transport{fakeHttpTransport} })
-		Given(func() { fayeClient = BuildFayeClient().Client() })
-		When(func() { fayeClient.handshake() })
+		Given(func() { fayeClient = BuildFayeClient().WithTransport(fakeHttpTransport).Client() })
+		When(func() { fayeClient.attemptHandshake() })
 		Then(func() { So(fayeClient.state, ShouldEqual, UNCONNECTED) })
 		Then(func() { So(fayeClient.schedular.delay(), ShouldEqual, 10*time.Second) })
 	})

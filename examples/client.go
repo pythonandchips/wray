@@ -9,7 +9,11 @@ func main() {
 
 	fmt.Println("subscribing")
 	client.Subscribe("/foo", false, func(message wray.Message) {
-		fmt.Println("-------------------------------------------")
+		fmt.Println("---receiving foo----------------------------------------")
+		fmt.Println(message.Data)
+	})
+	client.Subscribe("/bar", false, func(message wray.Message) {
+		fmt.Println("---receiving bar----------------------------------------")
 		fmt.Println(message.Data)
 	})
 
