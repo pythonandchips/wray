@@ -42,7 +42,7 @@ func (self HttpTransport) send(data map[string]interface{}) (Response, error) {
 	responseData.Body.Close()
 	var jsonData []interface{}
 	json.Unmarshal(readData, &jsonData)
-	response := newResponse(jsonData)
+	response := NewResponse(jsonData)
 	return response, nil
 }
 

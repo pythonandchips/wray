@@ -59,7 +59,7 @@ func TestConnectionType(t *testing.T) {
 
 func TestSendToServer(t *testing.T) {
 
-	Convey("should send request to server and return response to callback", t, func() {
+	Convey("should send request to server and return response", t, func() {
 		var server *httptest.Server
 		var httpTransport HttpTransport
 		var params map[string]interface{}
@@ -109,39 +109,13 @@ func TestSendToServer(t *testing.T) {
 			Then(func() { So(message.Data, ShouldResemble, map[string]interface{}{"hello": "world"}) })
 			Then(func() { So(message.Id, ShouldEqual, "3") })
 		})
-		defer server.Close()
-	})
-	Convey("should send request to server and return response to callback", t, func() {
-		var server *httptest.Server
-		var httpTransport HttpTransport
-		var params map[string]interface{}
-		var recievedParams map[string]interface{}
-		var response Response
-		var headerParams map[string]interface{}
-		var returnData []interface{}
-		Given(func() {
-			server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				requestData, _ := ioutil.ReadAll(r.Body)
-				json.Unmarshal(requestData, &recievedParams)
-
-				returnBytes, _ := json.Marshal(returnData)
-				w.Write(returnBytes)
-			}))
+		Convey("advice", func() {
+			var advice Advice
+			Given(func() { advice = response.advice })
+			Then(func() { So(advice.reconnect, ShouldEqual, "retry") })
+			Then(func() { So(advice.interval, ShouldEqual, 0) })
+			Then(func() { So(advice.timeout, ShouldEqual, 45000) })
 		})
-		Given(func() {
-			headerParams = map[string]interface{}{"id": "1",
-				"clientId":   "client1",
-				"channel":    "/meta/connect",
-				"successful": true,
-				"advice": map[string]interface{}{"reconnect": "retry",
-					"interval": 0,
-					"timeout":  45000}}
-		})
-		Given(func() { returnData = []interface{}{headerParams} })
-		Given(func() { httpTransport = HttpTransport{url: server.URL} })
-		Given(func() { params = map[string]interface{}{"hello": "world"} })
-		When(func() { response, _ = httpTransport.send(params) })
-		Then(func() { So(len(response.messages), ShouldEqual, 0) })
 		defer server.Close()
 	})
 	Convey("when server is not available", t, func() {

@@ -68,12 +68,12 @@ Simple examples are availabe in the examples folder.
 ##Future Work
 There is still a lot to do to bring Wray in line with Faye functionality. This is a less than exhaustive list of work to be completed:-
 
+- (done) correctly handle disconnect and server down
+- correct message id sent to server
 - web socket support
 - eventsource support
 - logging
 - middleware additions
-- correctly handle disconnect and server down
-- promises for subscription and publishing
 - automated integrations test to ensure Wray continues to work with Faye
 
 ## Bugs/Features/Prase
