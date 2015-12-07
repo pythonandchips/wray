@@ -30,7 +30,11 @@ func (self HttpTransport) connectionType() string {
 
 func (self HttpTransport) send(data map[string]interface{}) (Response, error) {
 	dataBytes, _ := json.Marshal(data)
-	buffer := bytes.NewBuffer(dataBytes)
+	return self.sendJSON(dataBytes)
+}
+
+func (self HttpTransport) sendJSON(json string) (Response, error) {
+	buffer := bytes.NewBuffer(json)
 	responseData, err := http.Post(self.url, "application/json", buffer)
 	if err != nil {
 		return Response{}, err
@@ -43,7 +47,7 @@ func (self HttpTransport) send(data map[string]interface{}) (Response, error) {
 	var jsonData []interface{}
 	json.Unmarshal(readData, &jsonData)
 	response := newResponse(jsonData)
-	return response, nil
+	return response, nil	
 }
 
 func (self *HttpTransport) setUrl(url string) {
