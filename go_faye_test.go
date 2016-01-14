@@ -165,29 +165,32 @@ func TestHandleResponse(t *testing.T) {
 		var subscriptions []Subscription
 		var firstParams map[string]interface{}
 		var secondParams map[string]interface{}
-		var firstMessages []Message
-		var secondMessages []Message
+		var firstMessages []map[string]interface{}
+		var secondMessages []map[string]interface{}
 		Given(func() {
-			subscriptions = []Subscription{Subscription{"/foo/bar", func(message Message) { firstMessages = append(firstMessages, message) }},
-				Subscription{"/foo/*", func(message Message) { secondMessages = append(secondMessages, message) }},
+			subscriptions = []Subscription{
+				{"/foo/bar", func(message Message) { firstMessages = append(firstMessages, message.Data) }},
+				{"/foo/*", func(message Message) { secondMessages = append(secondMessages, message.Data) }},
 			}
 		})
 		Given(func() { firstParams = map[string]interface{}{"foo": "bar"} })
 		Given(func() { secondParams = map[string]interface{}{"baz": "qux"} })
 		Given(func() { fayeClient = BuildFayeClient().WithSubscriptions(subscriptions).Client() })
 		Given(func() {
-			messages = []Message{Message{Channel: "/foo/bar", Id: "1", Data: firstParams},
-				Message{Channel: "/foo/quz", Id: "1", Data: secondParams}}
+			messages = []Message{
+				{Channel: "/foo/bar", Id: "1", Data: firstParams},
+				{Channel: "/foo/quz", Id: "1", Data: secondParams},
+			}
 		})
 		Given(func() { response = Response{messages: messages, channel: "/meta/connect", clientId: "client1"} })
 		When(func() { fayeClient.handleResponse(response) })
 		//need a very short sleep in here to allow the go routines to complete
 		//as all they are doing is assigning a variable 10 milliseconds shoule be more than enough
-		Wait(10 * time.Millisecond)
-		Then(func() { So(firstMessages[0].Data, ShouldResemble, firstParams) })
+		Wait(100 * time.Millisecond)
+		Then(func() { So(firstMessages, ShouldContain, firstParams) })
 		Then(func() { So(len(secondMessages), ShouldEqual, 2) })
-		Then(func() { So(secondMessages[0].Data, ShouldResemble, firstParams) })
-		Then(func() { So(secondMessages[1].Data, ShouldResemble, secondParams) })
+		Then(func() { So(secondMessages, ShouldContain, firstParams) })
+		Then(func() { So(secondMessages, ShouldContain, secondParams) })
 	})
 }
 
