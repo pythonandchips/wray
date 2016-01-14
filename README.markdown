@@ -33,17 +33,17 @@ func main() {
   })
 
   if err != nil {
-    fmt.Println("Subscription to /foo failed")
+    fmt.Println("Subscription to /foo failed", err)
   }
 
   //wildcards can be used to subscribe to multipule channels
-  _, err = client.Subscribe("/foo/*", false, func(message wray.Message) {
+  promise, _ = client.Subscribe("/foo/*", false, func(message wray.Message) {
     fmt.Println("-------------------------------------------")
     fmt.Println(message.Data)
   })
 
-  if err != nil {
-    fmt.Println("Subscription to /foo/* failed")
+  if !promise.Successful() {
+    fmt.Println("Subscription to /foo/* failed", promise.Error())
   }
 
   // try to subscribe forever
