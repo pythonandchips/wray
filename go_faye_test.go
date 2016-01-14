@@ -43,6 +43,7 @@ func TestSubscribe(t *testing.T) {
 		var fakeHttpTransport *FakeHttpTransport
 		var subscriptionParams map[string]interface{}
 		var response Response
+		var err error
 		Given(func() {
 			response = Response{id: "1", channel: "/meta/handshake", successful: true, clientId: "client4", supportedConnectionTypes: []string{"long-polling"}}
 		})
@@ -53,8 +54,9 @@ func TestSubscribe(t *testing.T) {
 			subscriptionParams = map[string]interface{}{"channel": "/meta/subscribe", "clientId": response.clientId, "subscription": "/foo/*", "id": "1"}
 		})
 		Given(func() { callback = func(message Message) {} })
-		When(func() { subscriptionPromise = fayeClient.Subscribe("/foo/*", false, callback) })
+		When(func() { subscriptionPromise, err = fayeClient.Subscribe("/foo/*", false, callback) })
 		Convey("connects the faye client", func() {
+			Then(func() { So(err, ShouldEqual, nil) })
 			Then(func() { So(fayeClient.state, ShouldEqual, CONNECTED) })
 		})
 		Convey("add the subscription to the client", func() {
