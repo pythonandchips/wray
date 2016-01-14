@@ -76,6 +76,41 @@ func TestSubscribe(t *testing.T) {
 	})
 }
 
+func TestSubscriptionError(t *testing.T) {
+	Convey("subscribe to a channel when unconnected", t, func() {
+		var fayeClient FayeClient
+		var callback func(Message)
+		var subscriptionPromise SubscriptionPromise
+		var fakeHttpTransport *FakeHttpTransport
+		var subscriptionParams map[string]interface{}
+		var failedResponse Response
+		var clientId string = "client1"
+		var err error
+		Given(func() {
+			failedResponse = Response{id: "1", channel: "/meta/subscribe", successful: false, clientId: clientId, supportedConnectionTypes: []string{"long-polling"}}
+		})
+		Given(func() { fakeHttpTransport = &FakeHttpTransport{usable: true, response: failedResponse} })
+		Given(func() { registeredTransports = []Transport{fakeHttpTransport} })
+		Given(func() { fayeClient = BuildFayeClient().WithTransport(fakeHttpTransport).Client() })
+		Given(func() { fayeClient.state = CONNECTED })
+		Given(func() {
+			subscriptionParams = map[string]interface{}{"channel": "/meta/subscribe", "clientId": clientId, "subscription": "/foo/*", "id": "1"}
+		})
+		Given(func() { callback = func(message Message) {} })
+		When(func() { subscriptionPromise, err = fayeClient.Subscribe("/foo/*", false, callback) })
+		Convey("fails to subscribe", func() {
+			Then(func() { So(err, ShouldNotEqual, nil) })
+			Then(func() { So(subscriptionPromise.Successful(), ShouldEqual, false) })
+		})
+		Convey("not add the subscription to the client", func() {
+			Then(func() { So(len(fayeClient.subscriptions), ShouldEqual, 0) })
+		})
+		Convey("the client send the subscription to the server", func() {
+			Then(func() { So(fakeHttpTransport.sentParams, ShouldResemble, subscriptionParams) })
+		})
+	})
+}
+
 func TestPerformHandshake(t *testing.T) {
 	Convey("successful handshake with server", t, func() {
 		var fayeClient FayeClient
