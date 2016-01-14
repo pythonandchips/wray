@@ -1,6 +1,7 @@
 package wray
 
 import (
+	"errors"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -80,16 +81,28 @@ func (self *FayeClient) handshake() {
 	}
 }
 
-func (self *FayeClient) Subscribe(channel string, force bool, callback func(Message)) SubscriptionPromise {
+func (self *FayeClient) Subscribe(channel string, force bool, callback func(Message)) (promise SubscriptionPromise, err error) {
 	if self.state == UNCONNECTED {
 		self.handshake()
 	}
 	subscriptionParams := map[string]interface{}{"channel": "/meta/subscribe", "clientId": self.clientId, "subscription": channel, "id": "1"}
 	subscription := Subscription{channel: channel, callback: callback}
-	//TODO: deal with subscription failures
-	self.transport.send(subscriptionParams)
+
+	res, err := self.transport.send(subscriptionParams)
+
+	if err != nil {
+		return
+	}
+
+	if !res.successful {
+		// TODO: put more information in the error message about why it failed
+		err = errors.New("Response was unsuccessful")
+		return
+	}
+
+	promise = SubscriptionPromise{subscription}
 	self.subscriptions = append(self.subscriptions, subscription)
-	return SubscriptionPromise{subscription}
+	return
 }
 
 func (self *FayeClient) handleResponse(response Response) {
