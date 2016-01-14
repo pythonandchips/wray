@@ -12,11 +12,12 @@ Wray is only a client for Faye. You will need to setup a server using Ruby or No
 
 ###Subscribing to channels
 
-```
+```go
 package main
 
 import "github.com/pythonandchips/wray"
 import "fmt"
+import "time"
 
 func main() {
   //register the types of transport you want available. Only long-polling is currently supported
@@ -26,16 +27,38 @@ func main() {
   client := wray.NewFayeClient("http://localhost:5000/faye")
 
   //subscribe to the channels you want to listen to
-  client.Subscribe("/foo", false, func(message wray.Message) {
+  _, err := client.Subscribe("/foo", false, func(message wray.Message) {
     fmt.Println("-------------------------------------------")
     fmt.Println(message.Data)
   })
 
+  if err != nil {
+    fmt.Println("Subscription to /foo failed")
+  }
+
   //wildcards can be used to subscribe to multipule channels
-  client.Subscribe("/foo/*", false, func(message wray.Message) {
+  _, err = client.Subscribe("/foo/*", false, func(message wray.Message) {
     fmt.Println("-------------------------------------------")
     fmt.Println(message.Data)
   })
+
+  if err != nil {
+    fmt.Println("Subscription to /foo/* failed")
+  }
+
+  // try to subscribe forever
+  for {
+    _, err = client.Subscribe("/foo/*", false, func(message wray.Message) {
+      fmt.Println("-------------------------------------------")
+      fmt.Println(message.Data)
+    })
+
+    if err == nil {
+      break // break out of the loop if there was no error
+    }
+
+    time.Sleep(1*time.Second)
+  }
 
   //start listening on all subscribed channels and hold the process open
   client.Listen()
@@ -43,7 +66,8 @@ func main() {
 ```
 
 ###Publishing to channels
-```
+
+```go
 package main
 
 import "github.com/pythonandchips/wray"
