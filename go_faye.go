@@ -44,6 +44,15 @@ type Subscription struct {
 
 type SubscriptionPromise struct {
 	subscription Subscription
+	subError     error
+}
+
+func (self SubscriptionPromise) Error() error {
+	return self.subError
+}
+
+func (self SubscriptionPromise) Successful() bool {
+	return self.subError == nil
 }
 
 func NewFayeClient(url string) *FayeClient {
@@ -89,19 +98,23 @@ func (self *FayeClient) Subscribe(channel string, force bool, callback func(Mess
 	subscription := Subscription{channel: channel, callback: callback}
 
 	res, err := self.transport.send(subscriptionParams)
+	promise = SubscriptionPromise{subscription, nil}
 
 	if err != nil {
+		promise.subError = err
 		return
 	}
 
 	if !res.successful {
 		// TODO: put more information in the error message about why it failed
 		err = errors.New("Response was unsuccessful")
+		promise.subError = err
 		return
 	}
 
-	promise = SubscriptionPromise{subscription}
+	// don't add to the subscriptions until we know it succeeded
 	self.subscriptions = append(self.subscriptions, subscription)
+
 	return
 }
 
